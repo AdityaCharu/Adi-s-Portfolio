@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BASS Booking Assistant — Simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Saved copy of the BASS section, held off the live portfolio. One column: the story, the number, the simulator. */
+:root{
+  --bg:#F4F5F2; --panel:#FFFFFF; --panel-2:#E9EBE6; --ink:#15181B; --ink-2:#3E454C; --muted:#5F6770;
+  --run:#0E1114; --run-2:#171B20; --run-ink:#E8ECEF; --run-muted:#8D97A1;
+  --good:#2BC28A; --warn:#F2A93B; --bad:#F06A5C; --accent:#B86A00;
+  --f:'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0D0F12;--panel:#15181D;--panel-2:#1D2127;--ink:#EDF0F3;--ink-2:#C3CAD2;--muted:#8B95A1;--accent:#FFB020;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0D0F12;--panel:#15181D;--panel-2:#1D2127;--ink:#EDF0F3;--ink-2:#C3CAD2;--muted:#8B95A1;--accent:#FFB020;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:400 17px/1.6 var(--f);-webkit-font-smoothing:antialiased}
+.wrap{max-width:900px;margin:0 auto;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:48px 72px;display:grid;gap:28px}
+.note{background:var(--panel-2);border-radius:12px;padding:12px 16px;font-size:15px;color:var(--ink-2)}
+.meta{font-size:15px;color:var(--muted)}
+h1{font-size:clamp(34px,6vw,56px);line-height:1.02;letter-spacing:-.035em;margin:4px 0 0;text-wrap:balance}
+.copy p{margin:14px 0 0;max-width:38em;color:var(--ink-2)}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.tags span{font-size:14px;padding:5px 12px;border-radius:999px;background:var(--panel-2);color:var(--ink-2)}
+.run{background:var(--run);color:var(--run-ink);border-radius:18px;padding:clamp(18px,3vw,30px)}
+.big{font:700 clamp(56px,11vw,112px)/.9 var(--f);letter-spacing:-.05em;color:var(--warn)}
+.run.plugged .big,.run.plugged .meter{color:var(--good)}
+.run p{margin:12px 0 0;color:#D3D9DF;font-size:18px;max-width:30em}
+.row{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;margin-top:18px}
+.meter{font-variant-numeric:tabular-nums;color:var(--warn);font-size:15px}
+button{font:600 15px var(--f);cursor:pointer;border:0;border-radius:999px;padding:10px 16px;background:var(--run-2);color:var(--run-ink)}
+button:focus-visible{outline:2px solid var(--good);outline-offset:3px}
+.sim-top{display:flex;gap:14px;justify-content:space-between;align-items:center;margin-bottom:14px}
+.sim-top b{display:block;font-size:15px}
+.sim-top span{display:block;font-size:14.5px;color:var(--run-muted)}
+.switch[aria-checked="true"]{background:var(--good);color:#04140D}
+.feed{list-style:none;margin:0;padding:0;display:grid;gap:4px;min-height:226px}
+.t{display:grid;grid-template-columns:86px minmax(0,1fr) auto;gap:12px;align-items:center;padding:9px 12px;background:var(--run-2);border-radius:8px;font-size:14.5px;font-variant-numeric:tabular-nums}
+.t .id{color:var(--run-muted)} .t .w{overflow:hidden;text-overflow:ellipsis;white-space:nowrap} .t em{font-style:normal;color:var(--warn)}
+.t .s{font-weight:600;font-size:12.5px;letter-spacing:.03em} .ok{color:var(--good)} .wa{color:var(--warn)} .ba{color:var(--bad)}
+.foot{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.c{background:var(--run-2);border-radius:10px;padding:14px 16px} .c b{display:block;font-size:32px;line-height:1;font-variant-numeric:tabular-nums} .c span{display:block;margin-top:6px;font-size:14px;color:var(--run-muted)}
+.small{margin-top:12px;font-size:13px;color:var(--run-muted)}
+@media (max-width:520px){.t{grid-template-columns:minmax(0,1fr) auto}.t .id{display:none}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <section class="run" id="leak" aria-label="Revenue leakage">
+    <div class="big">~US$10K</div>
+    <p>Monthly revenue leakage traced to manual booking errors, and tackled with BASS.</p>
+    <div class="row"><span class="meter" id="leakText">US$0.00 leaked since you arrived</span><button type="button" id="plug">Plug the leak</button></div>
+  </section>
+
+  <section class="run" aria-label="BASS simulator">
+    <div class="sim-top">
+      <div><b>Bookings in</b><span>Switch BASS off to see what used to happen.</span></div>
+      <button class="switch" id="sw" type="button" role="switch" aria-checked="true">BASS on</button>
+    </div>
+    <ul class="feed" id="feed"></ul>
+    <div class="foot">
+      <div class="c"><b id="cc" class="ok">0</b><span>errors caught before a customer saw them</span></div>
+      <div class="c"><b id="cs" class="ba">0</b><span>errors that reached a customer</span></div>
+    </div>
+    <p class="small">Illustrative simulation. Booking IDs and error mix are made up; the error types are the real kinds BASS checks for.</p>
+  </section>
+</div>
+
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const PER_SEC = 10000 / (30 * 24 * 3600), t0 = performance.now(); let plugged = false;
+  setInterval(() => { if (!plugged) $('#leakText').textContent = `US$${((performance.now() - t0) / 1000 * PER_SEC).toFixed(2)} leaked since you arrived`; }, 250);
+  $('#plug').addEventListener('click', () => { if (plugged) return; plugged = true; $('#leak').classList.add('plugged'); $('#leakText').textContent = `Plugged at US$${((performance.now() - t0) / 1000 * PER_SEC).toFixed(2)}. That's what BASS does.`; $('#plug').textContent = 'Leak plugged'; });
+  const EXP = ['Louvre Museum timed entry', 'Burj Khalifa · Level 124', 'Vatican Museums skip-the-line', 'Sagrada Família guided tour', 'Eiffel Tower summit access', 'Seine river cruise', 'Colosseum underground', 'London Eye fast track', 'Universal Studios Singapore', 'Dubai desert safari'];
+  const ERR = ['Date mismatch', 'Pax count off by 1', 'Name encoding (MÃ¼ller)', 'Wrong time slot', 'Variant mismatch', 'Missing lead guest'];
+  const rnd = a => a[Math.floor(Math.random() * a.length)];
+  let on = true, caught = 0, slipped = 0;
+  function add(count = true) {
+    const err = Math.random() < .38, li = document.createElement('li'); li.className = 't';
+    const st = !err ? ['CONFIRMED', 'ok'] : on ? ['CAUGHT', 'wa'] : ['TO CUSTOMER', 'ba'];
+    if (err && count) on ? caught++ : slipped++;
+    li.innerHTML = '<span class="id"></span><span class="w"></span><span class="s"></span>';
+    li.querySelector('.id').textContent = 'HO-' + (48000 + Math.floor(Math.random() * 9999));
+    const w = li.querySelector('.w'); w.textContent = rnd(EXP) + ' ';
+    if (err) { const em = document.createElement('em'); em.textContent = '· ' + rnd(ERR); w.append(em); }
+    const s = li.querySelector('.s'); s.textContent = st[0]; s.classList.add(st[1]);
+    $('#feed').prepend(li); while ($('#feed').children.length > 5) $('#feed').lastChild.remove();
+    $('#cc').textContent = caught; $('#cs').textContent = slipped;
+  }
+  for (let i = 0; i < 5; i++) add(false);
+  (function loop() { if (!document.hidden) add(); setTimeout(loop, 1300 + Math.random() * 700); })();
+  $('#sw').addEventListener('click', e => { on = !on; e.currentTarget.setAttribute('aria-checked', String(on)); e.currentTarget.textContent = on ? 'BASS on' : 'BASS off'; });
+})();
+</script>
+</body>
+</html>
